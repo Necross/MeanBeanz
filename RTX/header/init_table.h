@@ -14,10 +14,10 @@ typedef struct pcb_record{
 	int id;
 	int priority;
 	int stackSize;
-	PC pc;
+	int pc;
 } InitTable;
 
-int initTableInit(InitTable * iT, int id, int priority, int size, PC pc);
+int initTableInit(InitTable * iT, int id, int priority, int stkSize, int pc);
 
 int initTableDestroy(InitTable * iT);
 
