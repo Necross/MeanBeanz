@@ -8,8 +8,9 @@
 #ifndef BUFFER_H_
 #define BUFFER_H_
 
-#include "global.h"
 #include <setjmp.h>
+#include "global.h"
+#include "msg_env.h"
 
 //UART buffer; a string; can be used as input/output buffer
 typedef struct char_buf{
@@ -19,13 +20,13 @@ typedef struct char_buf{
 	int size;
 	//flag if it is full
 	int ok_flag;
-} UARTBuf;
+} UARTBuffer;
 
 //put chars in buffer
-int enBuf(UARTBuf * buf, char * contentPtr);
+int enBuf(UARTBuffer * buf, char * contentPtr);
 
 //Make a copy of the buffer with only value and actual length of char
-int bufCopy(UARTBuf * buf, char * copy);
+int bufCopy(UARTBuffer * buf, char * copy);
 
 //Jump Buffer; it is a pre-defined C-Standard-Library type
 typedef jmp_buf JmpBuf;
