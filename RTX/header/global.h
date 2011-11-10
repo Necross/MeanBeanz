@@ -8,8 +8,9 @@
 #ifndef GLOBAL_H_
 #define GLOBAL_H_
 
-#include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 //SIZE CONSTANTS
 #define MAX_STACK_SIZE 255
@@ -27,10 +28,6 @@
 #define TERMINATOR_PID 5
 #define USER_PROCESS_PID_START 6
 
-//Program Counter
-typedef void* PC;
-//Stack Pointer
-typedef void* SP;
 //Message Type
 typedef enum msg_type{
 	WAKEUP_CODE, PROCESS_STATUS,

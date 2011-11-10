@@ -10,12 +10,15 @@
 
 //include all headers
 #include "global.h"
-#include "msg.h"
+#include "msg_env.h"
 #include "pcb.h"
 #include "init_table.h"
 #include "queue.h"
 #include "buffer.h"
 
+typedef enum atomic_switch{
+	on,off
+} a_switch;
 //Operation to be done with a process
 typedef enum proc_operation{
 	BLOCK_PROCESS, UNBLOCK_PROCESS, SUSPEND_PROCESS,
@@ -57,8 +60,8 @@ typedef struct k_rtx {
 	int kb_fid;
 	int crt_fid;
 	//File Name for input/output buffer
-	//const char kb_mfile[] = "kb_map";
-	//const char * crt_mfile = "crt_map";
+	//char * kb_mfile = "kb_map";
+	//char * crt_mfile = "crt_map";
 
 	//Trace Buffer Arrays
 	TraceBuffer * firstSent;
@@ -126,8 +129,8 @@ void k_setClock(TimeType time);
 TimeType k_getClock();
 
 //Atomicity
-void k_atomic(bool on);
-void atomic(enum{on,off});
+void k_atomic(a_switch);
+void atomic(a_switch);
 
 //Trace
 int getTraceBuf(MsgEnv * msgEnv);
