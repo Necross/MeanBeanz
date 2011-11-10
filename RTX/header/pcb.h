@@ -10,7 +10,7 @@
 
 #include <setjmp.h>
 #include "global.h"
-#include "msg.h"
+#include "msg_env.h"
 
 //The list of states of process:
 //READY: ready to execute; EXECUTING: running; SUSPENDED: execution suspended;
@@ -31,12 +31,12 @@ typedef struct pcb{
 	//Process ID
 	int id;
 	int priority;
-	PC pc;
-	SP sp;
+	int pc;
+	int * sp;
 	//Context of the process(for process switching)
 	jmp_buf jbContext;
 	//Received Message Envelope Queue(Priority Queue)
-	MsgEnv* msgEnvQueue;
+	MsgEnv * msgEnvQueue;
 	//Atomic Count
 	long aCount;
 	//Additional Information Field
@@ -44,7 +44,7 @@ typedef struct pcb{
 } PCB;
 
 //Initialization and memory allocation
-int pcbInit(PCB * pcbInstance, int id, int priority, PC pc, int stkSize, PCBState state);
+int pcbInit(PCB * pcbInstance, int id, int priority, int pc, int stkSize, PCBState state);
 
 //Destroy and free the memory for the process
 int pcbDestroy(PCB * pcbInstance);
