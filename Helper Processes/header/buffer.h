@@ -10,7 +10,14 @@
 
 #include <setjmp.h>
 #include "global.h"
-#include "msg.h"
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <errno.h>
+
+#include <string.h>
+#include <stdlib.h>
+//#include "msg.h"
 
 //UART buffer; a string; can be used as input/output buffer
 struct char_buf{

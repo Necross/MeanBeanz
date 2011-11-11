@@ -1,12 +1,9 @@
 // keyboard.c
-//
-// Keyboard Reader - emulate a hardware interrupt
-// read the keyboard and signal the parent process when a key is received
-//
-//+++++++++++++++++++++++
-// modifed to use the POSIX-style of obtaining shared memory
-// by P. Dasiewicz, June 5, 2007
-//+++++++++++++++++++++++++
+
+//Helper Process for RTX
+
+	//Created Nov 11 by Necross (Sohaib)
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <stdio.h>
 #include <signal.h>
@@ -22,71 +19,57 @@
 #include "global.h"
 #include "buffer.h"
 
-int buf_index;
+int buffer_index;
 
-// do any necessary cleanup before exitting
-// ( in this case, there is no cleanup to do)
-// Basically, we rely on the parent process to cleanup shared memory
-void in_die(int signal)
+//Clean up before exiting
+	//RTX takes care of this
+void terminator(int signal)
 {
 	exit(0);
 }
 
 
+//Arguments sent int [parent_pid fileName_for_shared_memory]
 int main (int argc, char * argv[])
 {
 	int parent_pid, fid;
-
-	caddr_t mmap_ptr;
-	UARTBuffer * in_mem_p;
+	caddr_t shared_mem_ptr;
+	UARTBuffer * input_buff;
 	char c;
 
-
-	// if parent tells us to terminate, then clean up first
-	sigset(SIGINT,in_die);
-
-	// get id of process to signal when we have input
-	// and the file id of the memory mapped file
-	// i.e. process input arguments
-	sscanf(argv[1], "%d", &parent_pid );
-	sscanf(argv[2], "%d", &fid );  // get the file id
-
-	// attach to shared memory so we can pass input to
-	// keyboard interrupt handler
-
-	mmap_ptr = mmap((caddr_t) 0,   /* Memory Location, 0 lets O/S choose */
-		    MAX_BUFFER_SIZE,/* How many bytes to mmap */
+	sigset(SIGINT,terminator); //If parent requires termination
+	sscanf(argv[1], "%d", &parent_pid ); //Obtaining Parents PID
+	sscanf(argv[2], "%d", &fid );  //Obtaining Shared File ID
+	//Obtaining pointer to shared memory location
+	shared_mem_ptr = mmap((caddr_t) 0,   /* Memory Location, 0 lets O/S choose */
+		    MAX_BUFFER_SIZE,/* Map 256 bytes */
 		    PROT_READ | PROT_WRITE, /* Read and write permissions */
 		    MAP_SHARED,    /* Accessible by another process */
 		    fid,           /* which file is associated with mmap */
 		    (off_t) 0);    /* Offset in page frame */
-    if (mmap_ptr == MAP_FAILED){
-      printf("Child memory map has failed, KB is aborting!\n");
-	  in_die(0);
+   //If unable to map shared memory
+	if (shared_mem_ptr == MAP_FAILED){
+		printf("Memory map has failed, Keyboard.c helper process is aborting!\n");
+		terminator(0);
     }
-
-	in_mem_p = (UARTBuffer *) mmap_ptr; // now we have a shared memory pointer
-
-	// read keyboard
-	buf_index = 0;
-	in_mem_p->ok_flag = 0;
+	input_buff = (UARTBuffer *) shared_mem_ptr; //Pointing the input buffer to the obtained shared memory
+	buffer_index = 0; //Initializing indexes
+	input_buff->ok_flag = 0; //ok_flag = 0, means no data in the buffer
 	do
 	{
 		c = getchar();
-		if ( c != '\n' ) {
-					if( buf_index < MAXCHAR-1 ) {
-						in_mem_p->value[buf_index++] = c;
+		if ( c != '\n' ) {	//If the input is not a carriage
+					if( buffer_index < MAXCHAR-1 ) { //Buffer size is not exceeded (256 characters)
+						input_buff->value[buffer_index++] = c;
 					}
 				} else {
-					in_mem_p->value[buf_index] = '\0';
-					in_mem_p->ok_flag = 1;  //set ready status bit
-					kill(parent_pid,SIGUSR1); //send a signal to parent
-					buf_index = 0;  // for now, just restart
-					while( in_mem_p->ok_flag == 1)
+					input_buff->value[buffer_index] = '\0';
+					input_buff->ok_flag = 1;  //set ready status bit
+					kill(parent_pid,SIGUSR1); //Send signal to parent. SIGUSR1 is mapped to the keyboard iProcess
+					buffer_index = 0;  // for now, just restart ???
+					while( input_buff->ok_flag == 1) //Sleep until input is not read in by the Kernel
 						usleep(100000);
 				}
 	}
-
 	while(1);  //an infinite loop - exit when parent signals us
-
-} // keyboard
+}
