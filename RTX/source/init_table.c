@@ -14,17 +14,17 @@ int initTableInit(InitTable * iT, int id, int priority, int stkSize, int pc){
 	iT->stackSize = stkSize;
 	iT->pc = pc;
 	if(iT){
-		return 0;
+		return 1;
 	}else{
-		return -1;
+		return 0;
 	}
 }
 
 int initTableDestroy(InitTable * iT){
 	free(iT);
 	if(iT){
-		return -1;
-	}else{
 		return 0;
+	}else{
+		return 1;
 	}
 }
