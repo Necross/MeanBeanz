@@ -1,16 +1,16 @@
-source/pcb.d source/pcb.o: ../source/pcb.c \
- /home/zik/Documents/Project/RTX/header/pcb.h \
- /home/zik/Documents/Project/RTX/header/global.h \
- /home/zik/Documents/Project/RTX/header/msg.h \
- /home/zik/Documents/Project/RTX/header/buffer.h \
- /home/zik/Documents/Project/RTX/header/pcb.h
+source/pcb.d: ../source/pcb.c \
+ /home/necross/Documents/MeanBeanz/RTX/header/pcb.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/global.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/msg.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/buffer.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/pcb.h
 
-/home/zik/Documents/Project/RTX/header/pcb.h:
+/home/necross/Documents/MeanBeanz/RTX/header/pcb.h:
 
-/home/zik/Documents/Project/RTX/header/global.h:
+/home/necross/Documents/MeanBeanz/RTX/header/global.h:
 
-/home/zik/Documents/Project/RTX/header/msg.h:
+/home/necross/Documents/MeanBeanz/RTX/header/msg.h:
 
-/home/zik/Documents/Project/RTX/header/buffer.h:
+/home/necross/Documents/MeanBeanz/RTX/header/buffer.h:
 
-/home/zik/Documents/Project/RTX/header/pcb.h:
+/home/necross/Documents/MeanBeanz/RTX/header/pcb.h:

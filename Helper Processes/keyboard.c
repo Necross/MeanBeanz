@@ -1,19 +1,27 @@
-/*
- * keyboard.c
- *
- *  Created on: 2011-11-10
- *      Author: necross
- */
+// keyboard.c
+//
+// Keyboard Reader - emulate a hardware interrupt
+// read the keyboard and signal the parent process when a key is received
+//
+//+++++++++++++++++++++++
+// modifed to use the POSIX-style of obtaining shared memory
+// by P. Dasiewicz, June 5, 2007
+//+++++++++++++++++++++++++
 
 #include <stdio.h>
 #include <signal.h>
-#include "demo.h"
 #include <fcntl.h>
-
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <errno.h>
+#include <string.h>
+#include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
+#include "global.h"
+#include "buffer.h"
 
-int bufsize = BUFFERSIZE;
 int buf_index;
 
 // do any necessary cleanup before exitting
@@ -30,7 +38,7 @@ int main (int argc, char * argv[])
 	int parent_pid, fid;
 
 	caddr_t mmap_ptr;
-	inputbuf * in_mem_p;
+	UARTBuffer * in_mem_p;
 	char c;
 
 
@@ -47,7 +55,7 @@ int main (int argc, char * argv[])
 	// keyboard interrupt handler
 
 	mmap_ptr = mmap((caddr_t) 0,   /* Memory Location, 0 lets O/S choose */
-		    bufsize,/* How many bytes to mmap */
+		    MAX_BUFFER_SIZE,/* How many bytes to mmap */
 		    PROT_READ | PROT_WRITE, /* Read and write permissions */
 		    MAP_SHARED,    /* Accessible by another process */
 		    fid,           /* which file is associated with mmap */
@@ -57,7 +65,7 @@ int main (int argc, char * argv[])
 	  in_die(0);
     }
 
-	in_mem_p = (inputbuf *) mmap_ptr; // now we have a shared memory pointer
+	in_mem_p = (UARTBuffer *) mmap_ptr; // now we have a shared memory pointer
 
 	// read keyboard
 	buf_index = 0;
@@ -67,10 +75,10 @@ int main (int argc, char * argv[])
 		c = getchar();
 		if ( c != '\n' ) {
 					if( buf_index < MAXCHAR-1 ) {
-						in_mem_p->indata[buf_index++] = c;
+						in_mem_p->value[buf_index++] = c;
 					}
 				} else {
-					in_mem_p->indata[buf_index] = '\0';
+					in_mem_p->value[buf_index] = '\0';
 					in_mem_p->ok_flag = 1;  //set ready status bit
 					kill(parent_pid,SIGUSR1); //send a signal to parent
 					buf_index = 0;  // for now, just restart
@@ -82,4 +90,3 @@ int main (int argc, char * argv[])
 	while(1);  //an infinite loop - exit when parent signals us
 
 } // keyboard
-

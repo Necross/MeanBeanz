@@ -1,22 +1,22 @@
-source/rtx.d source/rtx.o: ../source/rtx.c \
- /home/zik/Documents/Project/RTX/header/k_rtx.h \
- /home/zik/Documents/Project/RTX/header/global.h \
- /home/zik/Documents/Project/RTX/header/msg.h \
- /home/zik/Documents/Project/RTX/header/buffer.h \
- /home/zik/Documents/Project/RTX/header/pcb.h \
- /home/zik/Documents/Project/RTX/header/init_table.h \
- /home/zik/Documents/Project/RTX/header/queue.h
+source/rtx.d: ../source/rtx.c \
+ /home/necross/Documents/MeanBeanz/RTX/header/k_rtx.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/global.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/msg.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/buffer.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/pcb.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/init_table.h \
+ /home/necross/Documents/MeanBeanz/RTX/header/queue.h
 
-/home/zik/Documents/Project/RTX/header/k_rtx.h:
+/home/necross/Documents/MeanBeanz/RTX/header/k_rtx.h:
 
-/home/zik/Documents/Project/RTX/header/global.h:
+/home/necross/Documents/MeanBeanz/RTX/header/global.h:
 
-/home/zik/Documents/Project/RTX/header/msg.h:
+/home/necross/Documents/MeanBeanz/RTX/header/msg.h:
 
-/home/zik/Documents/Project/RTX/header/buffer.h:
+/home/necross/Documents/MeanBeanz/RTX/header/buffer.h:
 
-/home/zik/Documents/Project/RTX/header/pcb.h:
+/home/necross/Documents/MeanBeanz/RTX/header/pcb.h:
 
-/home/zik/Documents/Project/RTX/header/init_table.h:
+/home/necross/Documents/MeanBeanz/RTX/header/init_table.h:
 
-/home/zik/Documents/Project/RTX/header/queue.h:
+/home/necross/Documents/MeanBeanz/RTX/header/queue.h:
