@@ -10,14 +10,17 @@
 
 int PCBQueueInit(PCBQueue * pq){
 	pq = (PCBQueue *)malloc(4 * sizeof(PCBQueue));
-	for(int i=0; i<4 ; i++){
+	int i;
+	for(i=0;i<4 ; i++){
 		pq[i]=(PCBList *)malloc(sizeof(PCBList));
 		pq[i]->size = 0;
 	}
 	if(!pq){
 		return -1;
 	}else{
-		for(int i=0; i<4; i++){
+		int i;
+		for(i=0;i<4; i++)
+		{
 			if(!pq[i]){
 				return -1;
 			}
@@ -28,7 +31,9 @@ int PCBQueueInit(PCBQueue * pq){
 
 int PCBQueueDestroy(PCBQueue * pq){
 	if(pq){
-		for(int i=0; i<4; i++){
+		int i;
+		for(i=0;i<4; i++)
+		{
 			if(pq[i]){
 				PCB * current = pq[i]->head;
 				PCB * next;
@@ -101,8 +106,10 @@ int resortPQ(PCBQueue * pq, PCB * pcb, int priority){
 }
 
 PCB * getPCB(PCBQueue * pq, int pid){
-	if(pid<0 || !pq)
-	for(int i=0; i<4; i++){
+	if(pid<0 || !pq) {
+	int i;
+	for(i=0; i<4; i++)
+	{
 		if(pq[i]){
 			PCB * current = pq[i]->head;
 			while(current && current->nextPCB && current->nextPCB->id != pid)
@@ -110,6 +117,7 @@ PCB * getPCB(PCBQueue * pq, int pid){
 			if(current)
 				return current;
 		}
+	}
 	}
 	return NULL;
 }

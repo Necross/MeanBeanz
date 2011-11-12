@@ -26,6 +26,7 @@
 #include "buffer.h"
 #include "global.h"
 
+
 // globals
 UARTBuffer  * input_buffer, * output_buffer;		// pointer to structure that is the shared memory
 int in_pid;				// pid of keyboard child process
@@ -98,7 +99,7 @@ void die(int signal)
 
 //Coding CRT for testing purposes
 void crt_handler (int signum) {
-	printf ("Data was fucking output");
+	input_buffer->ok_flag = 0;  // tell child that the buffer has been emptied
 }
 
 
@@ -109,7 +110,6 @@ void kbd_handler(int signum) {
 	// copy input buffer
 	if (input_buffer->value [0] != '\0')
 	{
-		printf ("Stuff is being copied to the buffer as we speak Jim");
 		//Copy onto the output buffer
 		while ((input_buffer->value[count] != '\0') ) {
 			output_buffer->value[count] = input_buffer->value[count];
@@ -122,10 +122,10 @@ void kbd_handler(int signum) {
 	    //
 	   // printf("Keyboard input was: %s\n",command.value );
 	    output_buffer->ok_flag = 1; //telling output buffer that data is available for output
-		input_buffer->ok_flag = 0;  // tell child that the buffer has been emptied
 	}
 
 }
+
 
 //**************************************************************************
 int main()
@@ -143,7 +143,6 @@ int main()
 	sigset(SIGABRT,die);
 	sigset(SIGTERM,die);
 	sigset(SIGSEGV,die);	// catch segmentation faults
-
 
 	sigset(SIGUSR1,kbd_handler);
 	sigset(SIGUSR2,crt_handler);
@@ -213,7 +212,7 @@ int main()
 	{
 		execl("./crt", "crt", childarg1, childarg2, (char *)0);
 		// should never reach here
-		fprintf(stderr,"demo: can't exec crt.c , errno %d\n",errno);
+		fprintf(stderr,"demo: can't exec crt , errno %d\n",errno);
 		cleanup();
 		exit(1);
 	};
@@ -263,7 +262,9 @@ int main()
 	// in this case, do nothing; only the keyboard handler will do work
 	input_buffer->ok_flag = 0;
 	printf("\nType something followed by end-of-line and it will be echoed\n\n");
-	while (1);
+	do {
+
+	} while (1);
 
 	// should never reach here, but in case we do, clean up after ourselves
 	cleanup();

@@ -33,20 +33,21 @@ void terminator(int signal)
 int main (int argc, char * argv[])
 {
 	int parent_pid, fid;
-	caddr_t shared_mem_ptr;
+	void * shared_mem_ptr;
 	UARTBuffer * input_buff;
 	char c;
+
 
 	sigset(SIGINT,terminator); //If parent requires termination
 	sscanf(argv[1], "%d", &parent_pid ); //Obtaining Parents PID
 	sscanf(argv[2], "%d", &fid );  //Obtaining Shared File ID
 	//Obtaining pointer to shared memory location
-	shared_mem_ptr = mmap((caddr_t) 0,   /* Memory Location, 0 lets O/S choose */
-		    MAX_BUFFER_SIZE,/* Map 256 bytes */
-		    PROT_READ | PROT_WRITE, /* Read and write permissions */
-		    MAP_SHARED,    /* Accessible by another process */
-		    fid,           /* which file is associated with mmap */
-		    (off_t) 0);    /* Offset in page frame */
+	shared_mem_ptr = mmap((void *) 0,   // Memory Location, 0 lets O/S choose
+		    MAX_BUFFER_SIZE, // Map 256 bytes
+		    PROT_READ | PROT_WRITE, // Read and write permissions
+		    MAP_SHARED,    // Accessible by another process
+		    fid,           // which file is associated with mmap
+		    (off_t) 0);    // Offset in page frame
    //If unable to map shared memory
 	if (shared_mem_ptr == MAP_FAILED){
 		printf("Memory map has failed, Keyboard.c helper process is aborting!\n");

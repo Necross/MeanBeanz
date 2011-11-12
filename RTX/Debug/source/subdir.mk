@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../source/init_table.c \
+../source/k_atomic.c \
 ../source/main.c \
 ../source/msg.c \
 ../source/pcb.c \
@@ -13,6 +14,7 @@ C_SRCS += \
 
 OBJS += \
 ./source/init_table.o \
+./source/k_atomic.o \
 ./source/main.o \
 ./source/msg.o \
 ./source/pcb.o \
@@ -21,6 +23,7 @@ OBJS += \
 
 C_DEPS += \
 ./source/init_table.d \
+./source/k_atomic.d \
 ./source/main.d \
 ./source/msg.d \
 ./source/pcb.d \
@@ -32,7 +35,7 @@ C_DEPS += \
 source/%.o: ../source/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-	gcc -I"/home/necross/Documents/MeanBeanz/RTX/header" -O0 -g3 -Wall -c -fmessage-length=0 -std=c99 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
+	gcc -I/home/necross/Documents/MeanBeanz/RTX/header -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

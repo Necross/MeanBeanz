@@ -20,7 +20,7 @@
 #define AVAIL_MSG_ENV_SIZE 255
 #define MSG_SIZE 255
 //Maximum amount of characters allowed in the input/output buffer
-#define MAXCHAR 255
+#define MAXCHAR 100
 
 
 /*PIDs*/
