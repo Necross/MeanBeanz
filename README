@@ -1,0 +1,10 @@
+Please see todo file
+
+-Setup Elipse+CDT
+-Setup Github
+-Pull project to local branch
+-Work in that project
+
+Note:
+-Add "-std=c99" to gcc flag (in eclipse configuration:Debug & Release)
+

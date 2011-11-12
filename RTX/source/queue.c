@@ -16,16 +16,16 @@ int PCBQueueInit(PCBQueue * pq){
 		pq[i]->size = 0;
 	}
 	if(!pq){
-		return -1;
+		return 0;
 	}else{
 		int i;
 		for(i=0;i<4; i++)
 		{
 			if(!pq[i]){
-				return -1;
+				return 0;
 			}
 		}
-		return 0;
+		return 1;
 	}
 }
 
@@ -41,7 +41,7 @@ int PCBQueueDestroy(PCBQueue * pq){
 					next = current->nextPCB;
 					free(current);
 					if(current)
-						return -1;
+						return 0;
 					current = next;
 				}
 				pq[i]->head = NULL;
@@ -50,20 +50,20 @@ int PCBQueueDestroy(PCBQueue * pq){
 			}
 			free(pq[i]);
 			if(pq[i])
-				return -1;
+				return 0;
 		}
 		free(pq);
 	}
 	if(pq){
-		return -1;
-	}else{
 		return 0;
+	}else{
+		return 1;
 	}
 }
 
 int enPQ(PCBQueue * pq, PCB * pcb, int priority){
 	if(priority<0 || priority>3 || !pcb || !pq || !pq[priority]){
-		return -1;
+		return 0;
 	}else{
 		if(pq[priority]->head == NULL){
 			pq[priority]->head = pcb;
@@ -74,7 +74,7 @@ int enPQ(PCBQueue * pq, PCB * pcb, int priority){
 		(pq[priority]->size)++;
 		pcb->nextPCB = NULL;
 		pcb->priority = priority;
-		return 0;
+		return 1;
 	}
 }
 
@@ -94,7 +94,7 @@ PCB * dePQ(PCBQueue * pq, int priority){
 
 int resortPQ(PCBQueue * pq, PCB * pcb, int priority){
 	if(priority<0 || priority>3 || !pq || !pq[priority]){
-		return -1;
+		return 0;
 	}else{
 		PCB * prev = pq[priority]->head;
 		while(prev && prev->nextPCB != pcb)
@@ -105,11 +105,17 @@ int resortPQ(PCBQueue * pq, PCB * pcb, int priority){
 	}
 }
 
+<<<<<<< HEAD
 PCB * getPCB(PCBQueue * pq, int pid){
 	if(pid<0 || !pq) {
 	int i;
 	for(i=0; i<4; i++)
 	{
+=======
+PCB * SearchQueue(PCBQueue * pq, int pid){
+	if(pid<0 || !pq)
+	for(int i=0; i<4; i++){
+>>>>>>> 4f6f6026dd5ef0e2af44aa762facef2e5819a695
 		if(pq[i]){
 			PCB * current = pq[i]->head;
 			while(current && current->nextPCB && current->nextPCB->id != pid)

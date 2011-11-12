@@ -10,20 +10,20 @@
 int msgEnvInit(MsgEnv * msgEnv){
 	msgEnv = (MsgEnv *)malloc(sizeof(MsgEnv));
 	if(msgEnv)
-		return 0;
+		return 1;
 	else
-		return -1;
+		return 0;
 }
 
 int msgEnvDestroy(MsgEnv * msgEnv){
-	free(msgEnv->msg.buf);
-	if(msgEnv->msg.buf)
-		return -1;
+	free(msgEnv->msg.str);
+	if(msgEnv->msg.str)
+		return 0;
 	free(msgEnv);
 	if(msgEnv)
-		return -1;
-	else
 		return 0;
+	else
+		return 1;
 }
 
 void eraseMsg(MsgEnv * msgEnv){

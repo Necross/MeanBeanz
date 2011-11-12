@@ -15,7 +15,7 @@
 //Message
 union msg{
 	long int value;
-	UARTBuffer * buf;
+	UARTBuffer * str;
 	PCBState state;
 	long int time;
 };

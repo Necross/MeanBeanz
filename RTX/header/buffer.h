@@ -22,15 +22,6 @@ struct char_buf{
 	int ok_flag;
 };
 
-//put chars in buffer
-int enBuf(UARTBuffer * buf, char * contentPtr);
-
-//Make a copy of the buffer with only value and actual length of char
-int bufCopy(UARTBuffer * buf, char * copy);
-
-//Jump Buffer; it is a pre-defined C-Standard-Library type
-typedef jmp_buf JmpBuf;
-
 //Trace Buffer
 struct trace_buf{
 	//Trace buffer is a two way linked list

@@ -27,31 +27,33 @@ struct time_field{
 //Kernel structure of RTX
 struct k_rtx {
 	//Ready Queue; queue of process ready to be executed
-	PCBQueue rq;
+	PCBQueue * rq;
 	//Block Process Queue
-	PCBQueue bq;
+	PCBQueue * bq;
 	//Current context running process
 	PCB * current_process;
 	//Available Envelope Queue(array)
-	MsgEnv availMsgEnvQueue[AVAIL_MSG_ENV_SIZE];
+	MsgEnv * availMsgEnvQueue;
 
 	//Total pulse/ticks timed
 	long totalTicks;
 	//Flag for wall clock
 	bool wallclock_enable;
 
+	UARTBuffer * kb_buf;
+	UARTBuffer * crt_buf;
 	//PID of Keyboard & CRT iProcess
 	int kb_pid;
 	int crt_pid;
 	//Memory Mapping Pointer for input/output buffer
-	char * kb_mem;
-	char * crt_mem;
+	void * kb_mem;
+	void * crt_mem;
 	//File ID for input/output buffer
 	int kb_fid;
 	int crt_fid;
 	//File Name for input/output buffer
-	//char * kb_mfile = "kb_map";
-	//char * crt_mfile = "crt_map";
+	char * kb_mfile;
+	char * crt_mfile;
 
 	//Trace Buffer Arrays
 	TraceBuffer * firstSent;
@@ -104,8 +106,8 @@ PCB * rpq_dequeue();
 /*iProcesses*/
 
 //Keyboard & CRT iProcesses
-int k_kb_iProcess();
-int k_crt_iProcess();
+void k_kb_iProcess();
+void k_crt_iProcess();
 
 //Null iProcess
 int k_null_iProcess();
@@ -130,5 +132,7 @@ int enTraceBuf(TraceBuffer * traceBuf, MsgEnv * msgEnv);
 
 //Terminate
 int k_terminate();
+
+PCB * getPCB(int pid);
 
 #endif /* K_RTX_H_ */
