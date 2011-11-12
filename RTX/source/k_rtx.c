@@ -10,7 +10,7 @@
 #include <signal.h>
 #include "k_rtx.h"
 
-k_RTX * kernel;
+extern k_RTX * kernel;
 
 PCB * getPCB(int pid){
 	PCB * p = SearchQueue(kernel->rq, pid);
@@ -71,7 +71,7 @@ int k_send_console_chars(MsgEnv * message_envelope ){
 int k_get_console_chars(MsgEnv * message_envelope ){
 	while(kernel->kb_buf->ok_flag == 0)
 		sleep(100);
-	if(!(message_envelope->msg.str->value = strcpy(kernel->kb_buf->value, message_envelope->msg.str->value))){
+	if(!(strcpy(kernel->kb_buf->value, message_envelope->msg.str->value))){
 		return 0;
 	}else{
 		kernel->kb_buf->ok_flag = 0;
@@ -80,3 +80,4 @@ int k_get_console_chars(MsgEnv * message_envelope ){
 		return result;
 	}
 }
+

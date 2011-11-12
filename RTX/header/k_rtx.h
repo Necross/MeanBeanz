@@ -46,14 +46,14 @@ struct k_rtx {
 	int kb_pid;
 	int crt_pid;
 	//Memory Mapping Pointer for input/output buffer
-	char * kb_mem;
-	char * crt_mem;
+	void * kb_mem;
+	void * crt_mem;
 	//File ID for input/output buffer
 	int kb_fid;
 	int crt_fid;
 	//File Name for input/output buffer
-	//char * kb_mfile = "kb_map";
-	//char * crt_mfile = "crt_map";
+	char * kb_mfile;
+	char * crt_mfile;
 
 	//Trace Buffer Arrays
 	TraceBuffer * firstSent;
@@ -106,8 +106,8 @@ PCB * rpq_dequeue();
 /*iProcesses*/
 
 //Keyboard & CRT iProcesses
-int k_kb_iProcess();
-int k_crt_iProcess();
+void k_kb_iProcess();
+void k_crt_iProcess();
 
 //Null iProcess
 int k_null_iProcess();

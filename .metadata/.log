@@ -84,3 +84,21 @@ java.io.FileNotFoundException: /home/zik/intro/sample.xml (No such file or direc
 
 !ENTRY org.eclipse.cdt.core 1 0 2011-11-10 21:18:09.071
 !MESSAGE Indexed 'RTX' (7 sources, 58 headers) in 2.09 sec: 1,795 declarations; 2,151 references; 4 unresolved inclusions; 0 syntax errors; 9 unresolved names (0.23%)
+!SESSION 2011-11-12 00:04:18.242 -----------------------------------------------
+eclipse.buildId=M20100211-1343
+java.version=1.6.0_20
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86
+
+!ENTRY org.eclipse.cdt.core 1 0 2011-11-12 00:05:54.290
+!MESSAGE Indexed 'crt' (0 sources, 33 headers) in 0.66 sec: 622 declarations; 757 references; 3 unresolved inclusions; 0 syntax errors; 0 unresolved names (0.00%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2011-11-12 00:07:47.452
+!MESSAGE Indexed 'CRT' (0 sources, 33 headers) in 0.38 sec: 622 declarations; 757 references; 3 unresolved inclusions; 0 syntax errors; 0 unresolved names (0.00%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2011-11-12 00:09:18.220
+!MESSAGE Indexed 'KB' (0 sources, 33 headers) in 0.40 sec: 622 declarations; 757 references; 3 unresolved inclusions; 0 syntax errors; 0 unresolved names (0.00%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2011-11-12 00:10:24.201
+!MESSAGE Indexed 'CRT' (0 sources, 33 headers) in 0.35 sec: 622 declarations; 757 references; 3 unresolved inclusions; 0 syntax errors; 0 unresolved names (0.00%)

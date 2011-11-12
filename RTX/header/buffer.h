@@ -14,22 +14,13 @@
 
 //UART buffer; a string; can be used as input/output buffer
 struct char_buf{
-	char * value;
+	char value[MAX_BUFFER_SIZE];
 	//position of next char(to write)
 	int pos;
 	int size;
 	//flag if it is full
 	int ok_flag;
 };
-
-//put chars in buffer
-int enBuf(UARTBuffer * buf, char * contentPtr);
-
-//Make a copy of the buffer with only value and actual length of char
-int bufCopy(UARTBuffer * buf, char * copy);
-
-//Jump Buffer; it is a pre-defined C-Standard-Library type
-typedef jmp_buf JmpBuf;
 
 //Trace Buffer
 struct trace_buf{
