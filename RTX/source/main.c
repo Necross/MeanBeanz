@@ -19,6 +19,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
 #include "k_rtx.h"
 #include "buffer.h"
 #include "global.h"
@@ -110,6 +111,13 @@ void ini_helper_Proc () {
 	/* Create a new mmap file for read/write access with permissions restricted to owner rwx access only */
 	kernel->crt_fid = open(kernel->crt_mfile, O_RDWR | O_CREAT | O_EXCL, (mode_t) 0755 );
 	if (kernel->crt_fid < 0){
+
+		void printtest(){
+			FILE * fp = fopen("crt_out","w");
+			fprintf(fp,"test");
+			fclose(fp);
+		}
+
 		printf("Bad Open of mmap file <%s>\n", kernel->crt_mfile);
 		exit(0);
 	};
@@ -226,13 +234,12 @@ void ini_helper_Proc () {
 //Coding CRT for testing purposes
 void k_crt_iProcess() {
 	//if(kernel->crt_buf->ok_flag == 1)
-		printf ("Got here son");
 		kernel->kb_buf->ok_flag = 0;
 }
 
 void k_kb_iProcess() {
+	int count = 0;
 	if(kernel->kb_buf->value[0] != '\0'){
-		int count = 0;
 		while(kernel->kb_buf->value[count] != '\0'){
 			kernel->crt_buf->value[count] = kernel->kb_buf->value[count];
 			count++;
@@ -292,9 +299,12 @@ int main () {
 	kernel = (k_RTX *)malloc(sizeof(k_RTX));
 	ini_Signals ();
 	ini_helper_Proc ();
+	kernel->crt_buf->ok_flag = 0;
 	kernel->kb_buf->ok_flag = 0;
 	printf("\nType something followed by end-of-line and it will be echoed\n\n");
-	while (1);
+	do {
+
+	}while (1);
 
 	// should never reach here, but in case we do, clean up after ourselves
 	cleanup();

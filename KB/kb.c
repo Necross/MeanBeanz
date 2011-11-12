@@ -1,9 +1,9 @@
-/*
- * kb.c
- *
- *  Created on: Nov 12, 2011
- *      Author: zik
- */
+// keyboard.c
+
+//Helper Process for RTX
+
+	//Created Nov 11 by Necross (Sohaib)
+//++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #include <stdio.h>
 #include <signal.h>
@@ -28,6 +28,7 @@ void terminator(int signal)
 	exit(0);
 }
 
+
 //Arguments sent int [parent_pid fileName_for_shared_memory]
 int main (int argc, char * argv[])
 {
@@ -49,7 +50,7 @@ int main (int argc, char * argv[])
 		    (off_t) 0);    // Offset in page frame
    //If unable to map shared memory
 	if (shared_mem_ptr == MAP_FAILED){
-		printf("Memory map has failed, Keyboard helper process is aborting!\n");
+		printf("Memory map has failed, Keyboard.c helper process is aborting!\n");
 		terminator(0);
     }
 	input_buff = (UARTBuffer *) shared_mem_ptr; //Pointing the input buffer to the obtained shared memory
@@ -59,7 +60,7 @@ int main (int argc, char * argv[])
 	{
 		c = getchar();
 		if ( c != '\n' ) {	//If the input is not a carriage
-					if( buffer_index < MAX_BUFFER_SIZE ) { //Buffer size is not exceeded (256 characters)
+					if( buffer_index < MAXCHAR-1 ) { //Buffer size is not exceeded (256 characters)
 						input_buff->value[buffer_index++] = c;
 					}
 				} else {
@@ -70,5 +71,6 @@ int main (int argc, char * argv[])
 					while( input_buff->ok_flag == 1) //Sleep until input is not read in by the Kernel
 						usleep(100000);
 				}
-	}while(1);  //an infinite loop - exit when parent signals us
+	}
+	while(1);  //an infinite loop - exit when parent signals us
 }

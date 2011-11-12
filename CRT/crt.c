@@ -1,10 +1,9 @@
 /*
- * crt.c
+ * ct.c
  *
- *  Created on: Nov 12, 2011
- *      Author: zik
+ *  Created on: 2011-11-11
+ *      Author: Necross
  */
-
 #include <stdio.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -53,7 +52,7 @@ int main (int argc, char * argv[])
     }
 
 	output_buff = (UARTBuffer *) shared_mem_ptr; // Pointing the input buffer to the obtained shared memory
-	buffer_index = 0; // Initializing indexes
+	buffer_index = 0; // Initialize indexes
 	output_buff->ok_flag = 0; // ok_flag = 0, means no data in the buffer
 	output_buff->size = MAX_BUFFER_SIZE;
 
@@ -63,14 +62,12 @@ int main (int argc, char * argv[])
 		}
 		if (output_buff->ok_flag == 1) { // If data is available
 			count = 0;
-			//printf ("Tried to output Data.");
-		//	printf("%s", output_buff->value);
+			//Outputting the data in the buffer
 			while ( (count <= output_buff->size) && (output_buff->value[count] != '\0') ) {
 					printf ("%c",output_buff->value[count]);
 					count++;
 			}
-			if(output_buff->value[0] != '\0')
-				printf ("\n");
+			printf ("\n");
 			output_buff->ok_flag = 0; // Setting flag = 0, implies that stuff was output
 			kill (parent_pid, SIGUSR2);
 			//Sleeping for a second before checking the shared buffer again
