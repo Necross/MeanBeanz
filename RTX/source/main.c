@@ -29,8 +29,8 @@
 // globals
 UARTBuffer  * input_buffer, * output_buffer;		// pointer to structure that is the shared memory
 int in_pid;				// pid of keyboard child process
-void * shared_input_ptr;
-int fidInputInput, status, fidInputOutput;		//used to create the shared memory
+void * shared_input_ptr, * shared_output_ptr;
+int fidInput, status, fidOutput;		//used to create the shared memory
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 char * inputFile = "keyboardTest";  //the name of the shared_memory file for input
@@ -44,7 +44,6 @@ char * outputFile = "outputTest";   //Output file
 
 void cleanup()
 {
-
 	// terminate child process(es)
 	kill(in_pid,SIGINT);
 	// remove shared memory segment and do some standard error checks
@@ -59,6 +58,24 @@ void cleanup()
     };
 	// unlink (i.e. delete) the temporary mmap file
     status = unlink(inputFile);
+    if (status == -1){
+      printf("Bad unlink during cleanup.\n");
+    }
+
+  //Output Buffer Cleanup
+	kill(in_pid,SIGINT);
+	// remove shared memory segment and do some standard error checks
+	status = munmap(shared_output_ptr, MAX_BUFFER_SIZE);
+    if (status == -1){
+      printf("Bad munmap during cleanup\n");
+    }
+	// close the temporary mmap file
+    status = close(fidOutput);
+    if (status == -1){
+      printf("Bad close of temporary mmap file during cleanup\n");
+    };
+	// unlink (i.e. delete) the temporary mmap file
+    status = unlink(outputFile);
     if (status == -1){
       printf("Bad unlink during cleanup.\n");
     }
@@ -156,7 +173,7 @@ int main()
   // make the file the same size as the buffer
   status = ftruncate(fidOutput, MAX_BUFFER_SIZE );
   if (status){
-      printf("Failed to ftruncate the file <%s>, status = %d\n", OutputFile, status );
+      printf("Failed to ftruncate the file <%s>, status = %d\n", outputFile, status );
       exit(0);
   }
 
@@ -187,8 +204,6 @@ int main()
 
 	// pass parent's process id and the file id to child
 	char childarg3[20], childarg4[20]; // arguments to pass to child process(es)
-	int mypid = getpid();			// get current process pid
-
 	sprintf(childarg3, "%d", mypid); // convert to string to pass to child
     sprintf(childarg4, "%d", fidOutput);   // convert the file identifier
 	in_pid = fork();
@@ -251,4 +266,4 @@ int main()
 	// should never reach here, but in case we do, clean up after ourselves
 	cleanup();
 	exit(1);
-} // main
+}
