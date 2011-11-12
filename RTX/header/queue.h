@@ -43,6 +43,6 @@ PCB * dePQ(PCBQueue * pq, int priority);
 int resortPQ(PCBQueue * pq, PCB * pcb, int priority);
 
 //Get PCB pointer from a queue searching by process id
-PCB * getPCB(PCBQueue * pq, int pid);
+PCB * SearchQueue(PCBQueue * pq, int pid);
 
 #endif /* QUEUE_H_ */

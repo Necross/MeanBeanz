@@ -1,0 +1,22 @@
+/*
+ * rtx.c
+ *
+ *  Created on: 2011-11-07
+ *      Author: necross
+ */
+
+#include "k_rtx.h"
+
+//Ali, put your initialization here;
+//int send_message( int dest_process_id, MsgEnv, *msg_envelope );
+//MsgEnv * receive_message( );
+//int send_console_chars(MsgEnv * message_envelope );
+//int get_console_chars(MsgEnv * message_envelope );
+
+MsgEnv * k_receive_msg();
+
+int k_send_messsage(int dest_process_id, MsgEnv * msg_envelope);
+
+int k_send_console_chars(MsgEnv * message_envelope );
+
+int k_get_console_chars(MsgEnv * message_envelope );

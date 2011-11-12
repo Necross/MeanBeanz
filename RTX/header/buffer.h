@@ -14,7 +14,7 @@
 
 //UART buffer; a string; can be used as input/output buffer
 struct char_buf{
-	char value[MAX_BUFFER_SIZE];
+	char * value;
 	//position of next char(to write)
 	int pos;
 	int size;

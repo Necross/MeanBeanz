@@ -27,19 +27,21 @@ struct time_field{
 //Kernel structure of RTX
 struct k_rtx {
 	//Ready Queue; queue of process ready to be executed
-	PCBQueue rq;
+	PCBQueue * rq;
 	//Block Process Queue
-	PCBQueue bq;
+	PCBQueue * bq;
 	//Current context running process
 	PCB * current_process;
 	//Available Envelope Queue(array)
-	MsgEnv availMsgEnvQueue[AVAIL_MSG_ENV_SIZE];
+	MsgEnv * availMsgEnvQueue;
 
 	//Total pulse/ticks timed
 	long totalTicks;
 	//Flag for wall clock
 	bool wallclock_enable;
 
+	UARTBuffer * kb_buf;
+	UARTBuffer * crt_buf;
 	//PID of Keyboard & CRT iProcess
 	int kb_pid;
 	int crt_pid;
@@ -130,5 +132,7 @@ int enTraceBuf(TraceBuffer * traceBuf, MsgEnv * msgEnv);
 
 //Terminate
 int k_terminate();
+
+PCB * getPCB(int pid);
 
 #endif /* K_RTX_H_ */

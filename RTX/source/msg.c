@@ -16,8 +16,8 @@ int msgEnvInit(MsgEnv * msgEnv){
 }
 
 int msgEnvDestroy(MsgEnv * msgEnv){
-	free(msgEnv->msg.buf);
-	if(msgEnv->msg.buf)
+	free(msgEnv->msg.str);
+	if(msgEnv->msg.str)
 		return 0;
 	free(msgEnv);
 	if(msgEnv)

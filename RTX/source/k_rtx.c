@@ -13,15 +13,13 @@
 k_RTX * kernel;
 
 PCB * getPCB(int pid){
-	PCB * pcb;
-	pcb = SearchQueue(kernel->rq, pid);
-	if(!pcb){
-		pcb = SearchQueue(kernel->bq, pid);
-	}
-	return pcb;
+	PCB * p = SearchQueue(kernel->rq, pid);
+	if(!p)
+		p = SearchQueue(kernel->bq, pid);
+	return p;
 }
 
-MsgEnv * k_receive_msg(){
+MsgEnv * k_receive_message(){
 	//get the process own pcb
 	PCB * pcb = kernel->current_process;
 	if(pcb->state == IS_IPROCESS)
@@ -37,12 +35,12 @@ MsgEnv * k_receive_msg(){
 	}
 }
 
-int k_send_messsage(int dest_process_id, MsgEnv * msg_envelope){
+int k_send_message(int dest_process_id, MsgEnv * msg_envelope){
 	PCB * pcb = getPCB(dest_process_id);
 	if(!pcb){
 		return 0;
 	}
-	msg_envelope->senderID = kernel->current_process;
+	msg_envelope->senderID = kernel->current_process->id;
 	msg_envelope->destID = dest_process_id;
 	MsgEnv * tail = pcb->msgEnvQueue;
 	if(tail){
@@ -60,7 +58,8 @@ int k_send_console_chars(MsgEnv * message_envelope ){
 		if(!k_send_message(KB_PID,message_envelope)){
 			return 0;
 		}
-		kill(getpid(),SIGUSR2);
+		if(!kill(getpid(),SIGUSR2))
+			return 0;
 		message_envelope = k_receive_message();
 		return k_send_message(message_envelope->senderID, message_envelope);
 	}else{
@@ -72,11 +71,11 @@ int k_send_console_chars(MsgEnv * message_envelope ){
 int k_get_console_chars(MsgEnv * message_envelope ){
 	while(kernel->kb_buf->ok_flag == 0)
 		sleep(100);
-	if(!(message_envelope->msg.str->value = strcpy(kernel->kb_buf, message_envelope->msg.str->value))){
+	if(!(message_envelope->msg.str->value = strcpy(kernel->kb_buf->value, message_envelope->msg.str->value))){
 		return 0;
 	}else{
 		kernel->kb_buf->ok_flag = 0;
-		kernel->kb_buf->size = strlen(kernel->kb_buf);
+		kernel->kb_buf->size = strlen(kernel->kb_buf->value);
 		int result = k_send_message(message_envelope->senderID, message_envelope);
 		return result;
 	}

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete resource &apos;RTX/source/keyboard.c&apos;" deleteContents="false" description="Delete resource &apos;RTX/source/keyboard.c&apos;" element1="/RTX/source/keyboard.c" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1320996799743"/>
+</session>
