@@ -98,29 +98,31 @@ void die(int signal)
 
 //Coding CRT for testing purposes
 void crt_handler (int signum) {
-	UARTBuffer output;
-	//Copy shit onto shared memory output buffer.....
-
-
-
+	printf ("Data was fucking output");
 }
 
 
-
+//(count <= input_buffer->size) &&
 void kbd_handler(int signum) {
-	UARTBuffer command;
-
+	//UARTBuffer command;
+	int count = 0;
 	// copy input buffer
 	if (input_buffer->value [0] != '\0')
 	{
-	    strcpy(command.value ,input_buffer->value );
-
-	    // we should parse the input string and execute the command given,
+		printf ("Stuff is being copied to the buffer as we speak Jim");
+		//Copy onto the output buffer
+		while ((input_buffer->value[count] != '\0') ) {
+			output_buffer->value[count] = input_buffer->value[count];
+			count++;
+		}
+		output_buffer->value[count] = '\0';
+		//strcpy(output_buffer->value ,input_buffer->value );
+	     // we should parse the input string and execute the command given,
 	    //  but for now we just echo the input
 	    //
-	    printf("Keyboard input was: %s\n",command.value );
-	    input_buffer->ok_flag = 0;  // tell child that the buffer has been emptied
-
+	   // printf("Keyboard input was: %s\n",command.value );
+	    output_buffer->ok_flag = 1; //telling output buffer that data is available for output
+		input_buffer->ok_flag = 0;  // tell child that the buffer has been emptied
 	}
 
 }

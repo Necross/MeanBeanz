@@ -2,7 +2,7 @@
  * ct.c
  *
  *  Created on: 2011-11-11
- *      Author: necross
+ *      Author: Necross
  */
 #include <stdio.h>
 #include <signal.h>
@@ -36,7 +36,6 @@ int main (int argc, char * argv[])
 	int parent_pid, fid, count;
 	caddr_t shared_mem_ptr;
 	UARTBuffer * output_buff;
-	char c;
 
 	sigset(SIGINT,terminator); //If parent requires termination
 	sscanf(argv[1], "%d", &parent_pid ); //Obtaining Parents PID
@@ -57,27 +56,22 @@ int main (int argc, char * argv[])
 	buffer_index = 0; // Initializing indexes
 	output_buff->ok_flag = 0; // ok_flag = 0, means no data in the buffer
 	output_buff->size = MAX_BUFFER_SIZE;
-	output_buff->pos = 0;
 
 	do {
+		while(output_buff->ok_flag == 0) { //Sleep until input is not read in by the Kernel
+			usleep(100000);
+		}
+		printf ("Got here");
 		if (output_buff->ok_flag == 1) { // If data is available
 			count = 0;
-			while (count <= output_buff->size) { // We want to iterate through the entire buffer [Maybe end loop, display of NULL characters?]
-					c = output_buff->value[output_buff->pos];
-					printf (c);
-					output_buff->value[output_buff->pos] = NULL; // Changing the displayed character to NULL
-					output_buff->pos++;
-					if (output_buff->pos == output_buff->size) { // This is a circular buffer, if the end is reached then it starts at the beginning again
-						output_buff->pos = 0;
-					}
+			while ( (count <= output_buff->size) && (output_buff->value[count] != '\0') ) {
+					printf ("%c",output_buff->value[count]);
 					count++;
 			}
-			printf ('\n'); 	// Going to a new line
+			printf ("\n"); 	// Going to a new line
 			output_buff->ok_flag = 0; // Setting flag = 0, implies that stuff was output
 			kill (parent_pid, SIGUSR2);
 			//Sleeping for a second before checking the shared buffer again
 		}
-		usleep(100000);
 	} while (1);
-	return (1);
 }
