@@ -1,5 +1,5 @@
 /*
- * rtx.c
+ * k_rtx.c
  *
  *  Created on: 2011-11-07
  *      Author: necross

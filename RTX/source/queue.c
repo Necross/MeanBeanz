@@ -104,26 +104,26 @@ int resortPQ(PCBQueue * pq, PCB * pcb, int priority){
 		return enPQ(pq, pcb, priority);
 	}
 }
-
-<<<<<<< HEAD
+/*
 PCB * getPCB(PCBQueue * pq, int pid){
 	if(pid<0 || !pq) {
 	int i;
 	for(i=0; i<4; i++)
 	{
 =======
+*/
 PCB * SearchQueue(PCBQueue * pq, int pid){
-	if(pid<0 || !pq)
-	for(int i=0; i<4; i++){
->>>>>>> 4f6f6026dd5ef0e2af44aa762facef2e5819a695
-		if(pq[i]){
-			PCB * current = pq[i]->head;
-			while(current && current->nextPCB && current->nextPCB->id != pid)
-				current = current->nextPCB;
-			if(current)
-				return current;
+	if(pid<0 || !pq) {
+		int i;
+		for(i=0; i<4; i++){
+			if(pq[i]){
+				PCB * current = pq[i]->head;
+				while(current && current->nextPCB && current->nextPCB->id != pid)
+					current = current->nextPCB;
+				if(current)
+					return current;
+			}
 		}
-	}
 	}
 	return NULL;
 }
