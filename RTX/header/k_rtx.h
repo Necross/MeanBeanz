@@ -45,6 +45,7 @@ struct k_rtx {
 	//PID of Keyboard & CRT iProcess
 	int kb_pid;
 	int crt_pid;
+	int timer_pid;
 	//Memory Mapping Pointer for input/output buffer
 	void * kb_mem;
 	void * crt_mem;
@@ -85,6 +86,7 @@ int k_release_msg_env(MsgEnv * msg_env_ptr);
 
 /*Process Scheduling*/
 
+void k_null_process ();
 //Release and free processor
 int k_release_processor();
 
@@ -95,8 +97,9 @@ int k_request_process_status(MsgEnv * msg_env_ptr);
 int k_scheduler(PCB * proc, Op PO, OpInfo info);
 
 //Process Switch from current_process to a new process
-int process_switch(PCB* newProc);
-
+int k_process_switch(PCB* newProc);
+//Context switch, actually does the switching
+int k_context_switch (PCB* current, PCB* next);
 //enqueue process in readyQ
 int rpq_enqueue(PCB * proc);
 
@@ -105,9 +108,10 @@ PCB * rpq_dequeue();
 
 /*iProcesses*/
 
-//Keyboard & CRT iProcesses
+//Keyboard, CRT and timer iProcesses
 void k_kb_iProcess();
 void k_crt_iProcess();
+void k_timer_iProcess ();
 
 //Null iProcess
 int k_null_iProcess();
@@ -129,6 +133,9 @@ int getTraceBuf(MsgEnv * msgEnv);
 int setTraceBufSent(MsgEnv *msgEnv);
 int setTraceBufReceived(MsgEnv * msgEnv);
 int enTraceBuf(TraceBuffer * traceBuf, MsgEnv * msgEnv);
+
+/* Other Primitives */
+int k_change_priority(int new_priority, int target_process_id);
 
 //Terminate
 int k_terminate();

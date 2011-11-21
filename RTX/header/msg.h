@@ -17,7 +17,7 @@ union msg{
 	long int value;
 	UARTBuffer * str;
 	PCBState state;
-	long int time;
+	long int timeoutCount;
 };
 
 struct msg_env{

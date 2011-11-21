@@ -25,7 +25,7 @@ struct pcb{
 	int * sp;
 	//Context of the process(for process switching)
 	jmp_buf jbContext;
-	//Received Message Envelope Queue(Priority Queue)
+	//Received Message Envelope Queue(Priority Queue) //WARNING: Add head and tail fields?
 	struct msg_env * msgEnvQueue;
 	//Atomic Count
 	long aCount;

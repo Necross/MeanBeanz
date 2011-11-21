@@ -26,6 +26,40 @@ PCB * getPCB(int pid){
 /*Processes*/
 /***********/
 
+//The timer i_process
+void k_timer_iProcess () {
+	k_atomic (on); //turning off interrupts
+	PCB * old_Process = kernel->current_process;
+	kernel->current_process = getPCB (kernel->timer_pid);	//Changing current process because thats how send_msg works
+	MsgEnv *temp, *newMsg, *previous;
+	PCB *timerPCB = getPCB (kernel->timer_pid);
+	newMsg;// = k_receive_message (); // WARNING: What if more than one message is received???
+	//Perhaps make sure that the newMsg type is the right one? REQUEST_DELAY type! is statement here?
+	if (!newMsg) {	//If there was a new message
+		temp = timerPCB->msgEnvQueue;
+		previous = temp;
+		while (!(temp->nextMsgEnv)) { // This should never be since the wallclock counter is always here!
+		if (newMsg->msg.timeoutCount <= temp->msg.timeoutCount) {	//Adding the new message
+			 previous->nextMsgEnv = newMsg;
+			 newMsg->nextMsgEnv = temp;
+		 }
+	}
+	//Decrementing the timer for all messages
+	temp = timerPCB->msgEnvQueue;
+	if (temp) // Only go in if there are envelopes to dequeue from
+		while (!(temp->nextMsgEnv)) {
+			temp->msg.timeoutCount--;
+			if (temp->msg.timeoutCount <= 0) {
+				temp->type = WAKEUP_CODE; //Setting type to wakeup code before returning it
+				k_send_message(temp->senderID, temp); //Remove from queue? Take care in send_message?
+			}
+			temp = temp->nextMsgEnv;
+		}
+	}
+	kernel->current_process = old_Process; //Restoring old process
+	k_atomic (off);
+}
+
 //crt-iprocess check local buffer
 //if its ready, copy data to share memory and reset local buffer
 void k_crt_iProcess() {
@@ -55,7 +89,6 @@ void k_kb_iProcess() {
 }
 
 
-
 /*Primitives*/
 /************/
 void k_atomic(a_switch flip) {
@@ -83,8 +116,21 @@ void k_atomic(a_switch flip) {
 	}*/
 }
 
-MsgEnv * k_receive_message(){
+int k_request_delay(int time_delay, int wakeupCode, MsgEnv * msg_env) {
+	if (!msg_env){
+		msg_env->destID = kernel->timer_pid;
+		msg_env->msg.timeoutCount = time_delay; //Time delay is multiples of 100 microSeconds
+		msg_env->type = REQUEST_DELAY;
+		k_send_message (kernel->timer_pid, msg_env);
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+MsgEnv * k_receive_message(){	//Return proper values for iProcesses
 	//get the process own pcb
+	//check state change
 	PCB * pcb = kernel->current_process;
 	if(pcb->state == IS_IPROCESS)
 		return NULL;
@@ -100,19 +146,26 @@ MsgEnv * k_receive_message(){
 }
 
 int k_send_message(int dest_process_id, MsgEnv * msg_envelope){
+	//Dequeue from current owner maybe?
+	//Change process state of receiving message
+
 	PCB * pcb = getPCB(dest_process_id);
 	if(!pcb){
 		return 0;
 	}
-	msg_envelope->senderID = kernel->current_process->id;
+	msg_envelope->senderID = kernel->current_process->id; //if request delay comes here then the current process is set!
 	msg_envelope->destID = dest_process_id;
-	MsgEnv * tail = pcb->msgEnvQueue;
-	if(tail){
+	MsgEnv * tail = pcb->msgEnvQueue; // WARNING: Why is this called Tail?
+	if (tail) {
 		while(tail->nextMsgEnv)
 			tail = tail->nextMsgEnv;
 		tail->nextMsgEnv = msg_envelope;
-	}else{
+	} else {
 		pcb->msgEnvQueue = msg_envelope;
+	}
+	if (pcb->state = BLOCK_ON_RCV) { // If the destination process was blocked on receive
+		dePQ (kernel->bq, pcb); //Dequeuing from the blocked queue
+		enPQ (kernel->rq, pcb, pcb->priority); //Adding to ready queue
 	}
 	return 1;
 }
@@ -164,4 +217,57 @@ MsgEnv * k_request_msg_env (){
 	}
 	return env;
 }
+
+int k_terminate () {
+	die (); //Add destructors...copy over the stuff in main.c to over here...
+}
+
+// Take care of a few things... current_process allowed here? Only Ready processes? Ask TA
+int k_change_priority(int new_priority, int target_process_id) {
+	int toReturn;
+	if (new_priority>3  || new_priority<0) { // If the new priority was out of bounds
+		toReturn = 0;
+	} else {
+		PCB *toChange = getPCB (target_process_id);
+		if (new_priority != toChange->priority) { // The the priority really is to be changed
+			dePQ (kernel->rq, toChange);
+			toChange->priority = new_priority;
+			toReturn = enPQ (kernel->rq, toChange, new_priority);
+		}
+	}
+	return toReturn;
+}
+
+
+/***********Scheduling and Process switching */
+int k_context_switch (PCB *oldProc, PCB *newProc) {
+	//use setjmp and longjmp to switch context etc....
+	//return appropriate return codes over here....
+}
+
+
+int k_process_switch (PCB *newProc) {
+	PCB *oldProc = kernel->current_process;
+	if(!newProc) { 	//if newProc not specified we dequeue from the ready queue
+		newProc = dePQ (kernel->rq, NULL);
+	}
+	k_context_switch (kernel->current_process, newProc);
+	//Return codes go over here....
+}
+
+
+void k_null_process () {
+	while (true) {
+		k_release_processor ();
+	}
+}
+
+int k_release_processor ()
+{
+	kernel->current_process->state = READY;
+	enPQ(kernel->rq, kernel->current_process, kernel->current_process->priority); //Putting current process on Ready queue
+	k_process_switch (NULL); //Sending in a NULL because we don't want to switch to a particular process
+	//Return something????
+}
+
 

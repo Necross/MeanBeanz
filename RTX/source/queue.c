@@ -73,10 +73,17 @@ int enPQ(PCBQueue * pq, PCB * pcb, int priority){
 	}
 }
 
-PCB * dePQ(PCBQueue * pq, int priority){
-	if(priority<0 || priority>3 || !pq || !pq[priority]){
-		return NULL;
-	}else{
+PCB * dePQ(PCBQueue * pq, PCB * toDQ) {  // Needs to send the first one found if toDQ = NULL (process_switch) otherwise dequeue normally
+	//if(priority<0 || priority>3 || !pq || !pq[priority]){
+	//	return NULL;
+	//}else{
+	int priority = 0;
+	if (!toDQ) { //If no specific PCB is sent in for dequeuing
+		while (pq[priority] == NULL) { // Going through each priority level and checking
+			priority++;
+			if (priority > 3) //Should NEVER reach here...null_process should always be running!
+				k_terminate ();
+		}
 		PCB * pcb = pq[priority]->head;
 		if(!(pcb->nextPCB)){
 			pq[priority]->tail = NULL;
@@ -84,6 +91,26 @@ PCB * dePQ(PCBQueue * pq, int priority){
 		pq[priority]->head = pcb->nextPCB;
 		(pq[priority]->size)--;
 		return pcb;
+	// MAJOR DEBUGGING NEEDED HERE PRETTY SURE THAT I DID NOT ACCOUNT FOR MANY CASES!
+	} else { // Second case we are looking for a specific PCB to dequeue
+		priority = 0;
+		PCB *temp = pq[priority]->head;
+		int condition = 0;
+		if (temp->id == toDQ->id) //The first one was it!
+			condition = 1;
+		while ((priority < 4) && (!condition)){
+			while (temp) {
+				temp = temp->nextPCB;
+				if (temp->nextPCB->id == toDQ->id) { // Found the previous PCB
+					condition = 1;
+				}
+			}
+			priority ++;
+			temp = pq[priority]->head;
+			if (temp->id == toDQ->id) // The first one was it!
+						condition = 1;
+		}
+		temp->nextPCB = toDQ->nextPCB;
 	}
 }
 

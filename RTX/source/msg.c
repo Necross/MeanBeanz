@@ -27,3 +27,6 @@ int msgEnvDestroy(MsgEnv ** msgEnv){
 void eraseMsg(MsgEnv * msgEnv){
 	msgEnv->msg.value = 0;
 }
+
+
+

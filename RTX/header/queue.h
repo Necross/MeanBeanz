@@ -37,7 +37,7 @@ int enPQ(PCBQueue * pq, PCB * pcb, int priority);
 //Dequeue a PCB from queue;
 //if PID is not specified, it is default -1, and
 //the most front process with highest priority will be dequeued
-PCB * dePQ(PCBQueue * pq, int priority);
+PCB * dePQ(PCBQueue * pq, PCB *toDQ);
 
 //Put PCB in a new place where as the priority
 int resortPQ(PCBQueue * pq, PCB * pcb, int priority);
