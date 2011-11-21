@@ -2,7 +2,7 @@
  * rtx.c
  *
  *  Created on: 2011-11-07
- *      Author: necross
+ *      Author: Sohaib
  */
 
 #include <unistd.h>
@@ -12,20 +12,18 @@
 
 extern k_RTX * kernel;
 
-/*Helper functions*/
-/******************/
+/********************************HELPER FUNCTIONS***************************************************/
 
-//get pcb from pid
-PCB * getPCB(int pid){
+PCB * getPCB(int pid){ //get pcb from pid
 	PCB * p = SearchQueue(kernel->rq, pid);
 	if(!p)
 		p = SearchQueue(kernel->bq, pid);
 	return p;
 }
 
-/*Processes*/
-/***********/
 
+
+/********************************iProcesses (KB, CRT AND TIMER)**********************************/
 //The timer i_process
 void k_timer_iProcess () {
 	k_atomic (on); //turning off interrupts
@@ -33,7 +31,7 @@ void k_timer_iProcess () {
 	kernel->current_process = getPCB (kernel->timer_pid);	//Changing current process because thats how send_msg works
 	MsgEnv *temp, *newMsg, *previous;
 	PCB *timerPCB = getPCB (kernel->timer_pid);
-	newMsg;// = k_receive_message (); // WARNING: What if more than one message is received???
+	newMsg = k_receive_message (); // WARNING: What if more than one message is received???
 	//Perhaps make sure that the newMsg type is the right one? REQUEST_DELAY type! is statement here?
 	if (!newMsg) {	//If there was a new message
 		temp = timerPCB->msgEnvQueue;
@@ -60,8 +58,7 @@ void k_timer_iProcess () {
 	k_atomic (off);
 }
 
-//crt-iprocess check local buffer
-//if its ready, copy data to share memory and reset local buffer
+//crt-iprocess check local buffer if its ready, copy data to share memory and reset local buffer
 void k_crt_iProcess() {
 	if(kernel->crt_buf->ok_flag == 1){
 		int i = 0;
@@ -89,8 +86,49 @@ void k_kb_iProcess() {
 }
 
 
-/*Primitives*/
-/************/
+
+/****************************CRT AND KB PROCESS COMMUNICATION*********************/
+
+int k_send_console_chars(MsgEnv * message_envelope ){
+	message_envelope->senderID = kernel->current_process->id;
+	if(message_envelope->msg.str){
+
+		//Copy the chars to be sent into local crt buffer
+		//and invoke crt_iprocess to copy the data from local buffer to share memory
+		int i = 0;
+		while((kernel->crt_buf->value[i] = message_envelope->msg.str->value[i]))
+			i++;
+		kernel->crt_buf->ok_flag = 1;
+		kernel->crt_buf->size = i;
+		if(kill(getpid(),SIGUSR2) != 0)
+			return 0;
+		return k_send_message(message_envelope->senderID, message_envelope);
+	}else{
+		k_send_message(message_envelope->senderID, message_envelope);
+		return 0;
+	}
+}
+
+int k_get_console_chars(MsgEnv * message_envelope ){
+	while(kernel->kb_buf->ok_flag == 0)
+		usleep(100000);
+
+	//Wait till the buf is ok, and copy the data from local buffer to envelope
+	//and reset local buffer
+	message_envelope->senderID = kernel->current_process->id;
+	int i = 0;
+	message_envelope->msg.str = (UARTBuffer *)malloc(sizeof(UARTBuffer));
+	while((message_envelope->msg.str->value[i] = kernel->kb_buf->value[i]))
+		i++;
+	kernel->kb_buf->ok_flag = 0;
+	kernel->kb_buf->size = 0;
+	return k_send_message(message_envelope->senderID, message_envelope);
+}
+
+
+
+/************************************ATOMICITY AND KERNEL DESTRUCTION***************************/
+
 void k_atomic(a_switch flip) {
 /*
 	//extern static long aCount;
@@ -115,6 +153,14 @@ void k_atomic(a_switch flip) {
 		}
 	}*/
 }
+
+int k_terminate () {
+	die (); //Add destructors...copy over the stuff in main.c to over here...
+}
+
+
+
+/*********************************INTERPROCESS COMMUNICATION****************************************/
 
 int k_request_delay(int time_delay, int wakeupCode, MsgEnv * msg_env) {
 	if (!msg_env){
@@ -170,42 +216,6 @@ int k_send_message(int dest_process_id, MsgEnv * msg_envelope){
 	return 1;
 }
 
-int k_send_console_chars(MsgEnv * message_envelope ){
-	message_envelope->senderID = kernel->current_process->id;
-	if(message_envelope->msg.str){
-
-		//Copy the chars to be sent into local crt buffer
-		//and invoke crt_iprocess to copy the data from local buffer to share memory
-		int i = 0;
-		while((kernel->crt_buf->value[i] = message_envelope->msg.str->value[i]))
-			i++;
-		kernel->crt_buf->ok_flag = 1;
-		kernel->crt_buf->size = i;
-		if(kill(getpid(),SIGUSR2) != 0)
-			return 0;
-		return k_send_message(message_envelope->senderID, message_envelope);
-	}else{
-		k_send_message(message_envelope->senderID, message_envelope);
-		return 0;
-	}
-}
-
-int k_get_console_chars(MsgEnv * message_envelope ){
-	while(kernel->kb_buf->ok_flag == 0)
-		usleep(100000);
-
-	//Wait till the buf is ok, and copy the data from local buffer to envelope
-	//and reset local buffer
-	message_envelope->senderID = kernel->current_process->id;
-	int i = 0;
-	message_envelope->msg.str = (UARTBuffer *)malloc(sizeof(UARTBuffer));
-	while((message_envelope->msg.str->value[i] = kernel->kb_buf->value[i]))
-		i++;
-	kernel->kb_buf->ok_flag = 0;
-	kernel->kb_buf->size = 0;
-	return k_send_message(message_envelope->senderID, message_envelope);
-}
-
 MsgEnv * k_request_msg_env (){
 	MsgEnv * env = kernel->availMsgEnvQueue->nextMsgEnv;
 	if(!env){
@@ -218,28 +228,10 @@ MsgEnv * k_request_msg_env (){
 	return env;
 }
 
-int k_terminate () {
-	die (); //Add destructors...copy over the stuff in main.c to over here...
-}
-
-// Take care of a few things... current_process allowed here? Only Ready processes? Ask TA
-int k_change_priority(int new_priority, int target_process_id) {
-	int toReturn;
-	if (new_priority>3  || new_priority<0) { // If the new priority was out of bounds
-		toReturn = 0;
-	} else {
-		PCB *toChange = getPCB (target_process_id);
-		if (new_priority != toChange->priority) { // The the priority really is to be changed
-			dePQ (kernel->rq, toChange);
-			toChange->priority = new_priority;
-			toReturn = enPQ (kernel->rq, toChange, new_priority);
-		}
-	}
-	return toReturn;
-}
 
 
-/***********Scheduling and Process switching */
+
+/***********************SCHEDULING AND PROCSSS SWITCHING**************************************** */
 int k_context_switch (PCB *oldProc, PCB *newProc) {
 	//use setjmp and longjmp to switch context etc....
 	//return appropriate return codes over here....
@@ -268,6 +260,67 @@ int k_release_processor ()
 	enPQ(kernel->rq, kernel->current_process, kernel->current_process->priority); //Putting current process on Ready queue
 	k_process_switch (NULL); //Sending in a NULL because we don't want to switch to a particular process
 	//Return something????
+}
+
+
+
+
+/***************************OTHER PRIMITIVES**********************************************************/
+
+// Take care of a few things... current_process allowed here? Only Ready processes? Ask TA
+int k_change_priority(int new_priority, int target_process_id) {
+	int toReturn;
+	if (new_priority>3  || new_priority<0) { // If the new priority was out of bounds
+		toReturn = 0;
+	} else {
+		PCB *toChange = getPCB (target_process_id);
+		if (new_priority != toChange->priority) { // The the priority really is to be changed
+			dePQ (kernel->rq, toChange);
+			toChange->priority = new_priority;
+			toReturn = enPQ (kernel->rq, toChange, new_priority);
+		}
+	}
+	return toReturn;
+}
+
+// Returns a Tuple containing all the processes, first element of the tuple contains the number of elements...
+int k_request_process_status (MsgEnv * msg_env_ptr) {
+	// Get number of processes
+	int tupleSize = queueSize(kernel->bq) + queueSize(kernel->rq); // Getting total number of processes
+	int i, priorityLevel = 0;
+	PCB *temp;
+	//Maybe add some error checks over here??
+	TUPLE * procList[tupleSize+1]; // Adding one because top one only has the total number of tuples!
+	for (i = 0; i < tupleSize+1; i++) {
+	    procList[i] = malloc (sizeof(TUPLE)); // Dynamically allocating each tuple in the array
+
+	}
+	i = 1;
+	procList[0]->pid = tupleSize; // Sending the total number of tuples back in the pid of the first one
+	while (kernel->rq[priorityLevel]) {	// Going through all the priority levels in the ready queue
+		temp = kernel->rq[priorityLevel]->head;
+		while (temp) {
+			procList[i]->pid = temp->id;
+			procList[i]->priority = temp->priority;
+			procList [i]->procStat = temp->state;
+			temp = temp->nextPCB;
+		}
+		priorityLevel++; // Moving onto the next priority level
+	}
+	priorityLevel = 0;
+	while (kernel->bq[priorityLevel]) { // Going through all the priority levels in the blocked queue
+		temp = kernel->bq[priorityLevel]->head;
+		while (temp) {
+			procList[i]->pid = temp->id;
+			procList[i]->priority = temp->priority;
+			procList [i]->procStat = temp->state;
+			temp = temp->nextPCB;
+		}
+		priorityLevel++; // Moving onto the next priority level
+	}
+	msg_env_ptr->msg.processList = procList;
+	int toReturn = k_send_message (msg_env_ptr->senderID, msg_env_ptr);
+	return (toReturn);
 }
 
 

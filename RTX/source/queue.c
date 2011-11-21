@@ -142,3 +142,15 @@ PCB * SearchQueue(PCBQueue * pq, int pid){
 	}
 	return NULL;
 }
+
+int queueSize (PCBQueue *pq) {
+	if (!pq) {	// if the queue sent in is NULL
+		return 0;
+	} else { // Go through all the levels
+		int processCount = 0, i = 0;
+		while (pq[i]) {
+			processCount += pq[i]->size; // Adding the number of processes at that level
+		}
+		return (processCount); // Returning the total number of processes in that list
+	}
+}

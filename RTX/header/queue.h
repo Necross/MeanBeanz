@@ -45,4 +45,7 @@ int resortPQ(PCBQueue * pq, PCB * pcb, int priority);
 //Get PCB pointer from a queue searching by process id
 PCB * SearchQueue(PCBQueue * pq, int pid);
 
+//Returns the total numbers of process in a priority queue
+int queueSize (PCBQueue *pq);
+
 #endif /* QUEUE_H_ */

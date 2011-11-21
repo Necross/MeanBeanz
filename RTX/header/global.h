@@ -56,6 +56,15 @@ typedef enum proc_operation{
 	SWITCH_TO_READY_PROCESS, START_RTX
 } Op;
 
+// Tuple data structure created for k_request_process_status
+struct tuple{
+	int pid;
+	PCBState procStat;
+	int priority;
+};
+
+
+typedef struct tuple TUPLE;
 typedef struct char_buf UARTBuffer;
 typedef struct trace_buf TraceBuffer;
 typedef union msg Msg;
