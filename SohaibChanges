@@ -1,5 +1,26 @@
+<<<<<<< HEAD
 Changes made by Sohaib 20th November
 -------------------------------------
+=======
+Added by Bruce 21-11-11
+
+- Discuss with Bruce before any change to his files
+	- It is a GROUP work. Everyone should agree the change [Well Bruce then maybe you shold show up to team meetings]
+	- It is done by Bruce. It is his beloving work [Correction. This is everyones work, this is in contradiction to the point you made above]
+	- Bruce might have a better idea [Yes! You might. But we won't get to know those ideas unless you come to team meetings.
+
+- Legit Programming includes: [I am aware of the returning scenarios, I was unsure as to what flag meant what]
+	- ALWAYS return something for function for indicating success or not. DO NOT MAKE VOID FUNCTION unless it is triggered by passing its pointer or system signla, e.g.k_scheduler, k_kb_iProcess
+	- Therefore ALWAYS check the return value when you call a function. DO NOT just call the function. Use if to check the return value to see if the function is working.
+	- Organize your code. Use 'if' to branch out all possibilities and make sure all branches return a value
+	- Do not use do while loop & goto label. It is not suggested by standard.
+	- Always initialize variables of values & struct. If it is a pointer, an initialization function should be provided/used.
+	- More to be
+
+
+Added by Sohaib 20th November
+
+>>>>>>> d7db2485260e82e90ec79d75120be1737bde8395
 
 - timer_iProcess
 - k_null_processor
