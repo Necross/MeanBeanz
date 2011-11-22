@@ -24,9 +24,9 @@ int get_console_chars(MsgEnv * msg_env ) {
 
 MsgEnv * receive_message( ){
 	k_atomic (on);
-	MsgEnv * result = k_receive_message ();
+	MsgEnv * message = k_receive_message ();
 	k_atomic (off);
-	return result;
+	return message;
 }
 
 

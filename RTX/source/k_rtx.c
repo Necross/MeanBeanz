@@ -29,10 +29,10 @@ void k_timer_iProcess () {
 	k_atomic (on); //turning off interrupts
 	PCB * old_Process = kernel->current_process;
 	kernel->current_process = getPCB (kernel->timer_pid);	//Changing current process because thats how send_msg works
-	MsgEnv *temp, *newMsg, *previous;
+	MsgEnv * temp, * newMsg, * previous;
 	PCB *timerPCB = getPCB (kernel->timer_pid);
 	newMsg = k_receive_message (); // WARNING: What if more than one message is received???
-	//Perhaps make sure that the newMsg type is the right one? REQUEST_DELAY type! is statement here?
+	//Perhaps make sure that the newMsg type is the right one? REQUEST_DELAY type! Return envelope unless envelope is right one
 	if (!newMsg) {	//If there was a new message
 		temp = timerPCB->msgEnvQueue;
 		previous = temp;
@@ -174,44 +174,42 @@ int k_request_delay(int time_delay, int wakeupCode, MsgEnv * msg_env) {
 	}
 }
 
-MsgEnv * k_receive_message(){	//Return proper values for iProcesses
-	//get the process own pcb
-	//check state change
+
+MsgEnv * k_receive_message() {
 	PCB * pcb = kernel->current_process;
-	if(pcb->state == IS_IPROCESS)
-		return NULL;
-	if(pcb->msgEnvQueue == NULL){
-		pcb->state = NO_BLK_RCV;
-		return NULL;
-	}else{
-		MsgEnv * result = pcb->msgEnvQueue;
-		pcb->msgEnvQueue = result->nextMsgEnv;
-		result->nextMsgEnv = NULL;
-		return result;
+	MsgEnv * result = pcb->msgEnvQueue; // Receiving the message envelope
+	if ((!result) && (pcb->state == IS_IPROCESS)) {	// If the invoking process was an iProcess it does not get blocked
+		return (NULL);
+	} else if (!result) { // Otherwise if no message then the process gets blocked and a context switch occurs
+		pcb->state = BLOCK_ON_RCV;
+		enPQ (kernel->bq, pcb, 0); // Putting the process on the blocked queue, do we need this? Ask TA....
+		k_process_switch (NULL); // Doing a process switch
 	}
+	// Will eventually return here. When process resumes execution it will execute the receive message line again!
+	pcb->msgEnvQueue = result->nextMsgEnv;
+	result->nextMsgEnv = NULL;
+	return result;
 }
 
 int k_send_message(int dest_process_id, MsgEnv * msg_envelope){
-	//Dequeue from current owner maybe?
-	//Change process state of receiving message
-
 	PCB * pcb = getPCB(dest_process_id);
 	if(!pcb){
 		return 0;
 	}
 	msg_envelope->senderID = kernel->current_process->id; //if request delay comes here then the current process is set!
 	msg_envelope->destID = dest_process_id;
-	MsgEnv * tail = pcb->msgEnvQueue; // WARNING: Why is this called Tail?
+	MsgEnv * tail = pcb->msgEnvQueue;
 	if (tail) {
-		while(tail->nextMsgEnv)
+		while(tail->nextMsgEnv) // Going to the end of the list of messages
 			tail = tail->nextMsgEnv;
 		tail->nextMsgEnv = msg_envelope;
 	} else {
-		pcb->msgEnvQueue = msg_envelope;
+		pcb->msgEnvQueue = msg_envelope; // If there are no messages there
 	}
-	if (pcb->state = BLOCK_ON_RCV) { // If the destination process was blocked on receive
+	if ((pcb->state) = BLOCK_ON_RCV) { // If the destination process was blocked on receive
 		dePQ (kernel->bq, pcb); //Dequeuing from the blocked queue
 		enPQ (kernel->rq, pcb, pcb->priority); //Adding to ready queue
+		pcb->state = READY;
 	}
 	return 1;
 }
@@ -232,25 +230,29 @@ MsgEnv * k_request_msg_env (){
 
 
 /***********************SCHEDULING AND PROCSSS SWITCHING**************************************** */
-int k_context_switch (PCB *oldProc, PCB *newProc) {
-	//use setjmp and longjmp to switch context etc....
-	//return appropriate return codes over here....
+
+// WARNING: context of both processes must already have been set in initialisation
+void k_context_switch (jmp_buf *oldProc, jmp_buf *newProc) { // Has to be a void what if null_proc -> null_proc
+	int return_code  = setjmp(*oldProc); // return_code is 1 if the context of the old process was saved
+	if (return_code == 0) {
+		longjmp(*newProc,1); // Restoring the context of the new process 1 is sent to make the if condition fail the second time
+	}
 }
 
 
 int k_process_switch (PCB *newProc) {
-	PCB *oldProc = kernel->current_process;
-	if(!newProc) { 	//if newProc not specified we dequeue from the ready queue
-		newProc = dePQ (kernel->rq, NULL);
-	}
-	k_context_switch (kernel->current_process, newProc);
-	//Return codes go over here....
-}
-
-
-void k_null_process () {
-	while (true) {
-		k_release_processor ();
+	if (!newProc) { // NULL Pointer was sent in
+		return (0);
+	} else  { // Valid pointer was sent in
+		PCB *oldProc = kernel->current_process;
+		if(!newProc) { 	//if newProc not specified we dequeue from the ready queue
+			newProc = dePQ (kernel->rq, NULL);
+			// Maybe take care of a case here?? Terminate kernel if unable to dequeue a process???? NULL return?
+		}
+		newProc->state = EXECUTING;
+		kernel->current_process = newProc;
+		k_context_switch (oldProc->jbContext, newProc->jbContext); // Sending context to context_switch
+		return (1);
 	}
 }
 
@@ -262,6 +264,11 @@ int k_release_processor ()
 	//Return something????
 }
 
+void k_null_process () {
+	while (true) {
+		k_release_processor ();
+	}
+}
 
 
 
@@ -271,13 +278,19 @@ int k_release_processor ()
 int k_change_priority(int new_priority, int target_process_id) {
 	int toReturn;
 	if (new_priority>3  || new_priority<0) { // If the new priority was out of bounds
+		printf ("KERNEL ERROR: Priority is out of bounds");
 		toReturn = 0;
 	} else {
 		PCB *toChange = getPCB (target_process_id);
-		if (new_priority != toChange->priority) { // The the priority really is to be changed
+		if (!toChange) { // The specified PCB was NOT located!
+			printf ("KERNEL ERROR: Process with specified pid does not exist.");
+			toReturn = 0;
+		} else if (new_priority != toChange->priority) { // The the priority really is to be changed
 			dePQ (kernel->rq, toChange);
 			toChange->priority = new_priority;
-			toReturn = enPQ (kernel->rq, toChange, new_priority);
+			toReturn = enPQ (kernel->rq, toChange, new_priority); // Should be 1 if successful
+		} else {
+			toReturn = 1; // The new priority is the same as the old one...no action required
 		}
 	}
 	return toReturn;
@@ -285,42 +298,46 @@ int k_change_priority(int new_priority, int target_process_id) {
 
 // Returns a Tuple containing all the processes, first element of the tuple contains the number of elements...
 int k_request_process_status (MsgEnv * msg_env_ptr) {
-	// Get number of processes
-	int tupleSize = queueSize(kernel->bq) + queueSize(kernel->rq); // Getting total number of processes
-	int i, priorityLevel = 0;
-	PCB *temp;
-	//Maybe add some error checks over here??
-	TUPLE * procList[tupleSize+1]; // Adding one because top one only has the total number of tuples!
-	for (i = 0; i < tupleSize+1; i++) {
-	    procList[i] = malloc (sizeof(TUPLE)); // Dynamically allocating each tuple in the array
+	if (!msg_env_ptr) { // If a NULL pointer was sent in
+		return 0;
+	} else { // Otherwise proceed as normal
+		// Get number of processes
+		int tupleSize = queueSize(kernel->bq) + queueSize(kernel->rq); // Getting total number of processes
+		int i, priorityLevel = 0;
+		PCB *temp;
+		//Maybe add some error checks over here??
+		TUPLE * procList[tupleSize+1]; // Adding one because top one only has the total number of tuples!
+		for (i = 0; i < tupleSize+1; i++) {
+			procList[i] = malloc (sizeof(TUPLE)); // Dynamically allocating each tuple in the array
 
-	}
-	i = 1;
-	procList[0]->pid = tupleSize; // Sending the total number of tuples back in the pid of the first one
-	while (kernel->rq[priorityLevel]) {	// Going through all the priority levels in the ready queue
-		temp = kernel->rq[priorityLevel]->head;
-		while (temp) {
-			procList[i]->pid = temp->id;
-			procList[i]->priority = temp->priority;
-			procList [i]->procStat = temp->state;
-			temp = temp->nextPCB;
 		}
-		priorityLevel++; // Moving onto the next priority level
-	}
-	priorityLevel = 0;
-	while (kernel->bq[priorityLevel]) { // Going through all the priority levels in the blocked queue
-		temp = kernel->bq[priorityLevel]->head;
-		while (temp) {
-			procList[i]->pid = temp->id;
-			procList[i]->priority = temp->priority;
-			procList [i]->procStat = temp->state;
-			temp = temp->nextPCB;
+		i = 1;
+		procList[0]->pid = tupleSize; // Sending the total number of tuples back in the pid of the first one
+		while (kernel->rq[priorityLevel]) {	// Going through all the priority levels in the ready queue
+			temp = kernel->rq[priorityLevel]->head;
+			while (temp) {
+				procList[i]->pid = temp->id;
+				procList[i]->priority = temp->priority;
+				procList [i]->procStat = temp->state;
+				temp = temp->nextPCB;
+			}
+			priorityLevel++; // Moving onto the next priority level
 		}
-		priorityLevel++; // Moving onto the next priority level
+		priorityLevel = 0;
+		while (kernel->bq[priorityLevel]) { // Going through all the priority levels in the blocked queue
+			temp = kernel->bq[priorityLevel]->head;
+			while (temp) {
+				procList[i]->pid = temp->id;
+				procList[i]->priority = temp->priority;
+				procList [i]->procStat = temp->state;
+				temp = temp->nextPCB;
+			}
+			priorityLevel++; // Moving onto the next priority level
+		}
+		msg_env_ptr->msg.processList = procList;
+		int toReturn = k_send_message (msg_env_ptr->senderID, msg_env_ptr);
+		return (toReturn);
 	}
-	msg_env_ptr->msg.processList = procList;
-	int toReturn = k_send_message (msg_env_ptr->senderID, msg_env_ptr);
-	return (toReturn);
 }
 
 

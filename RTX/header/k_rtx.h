@@ -73,7 +73,7 @@ void k_rtxDestroy(k_RTX * rtx);
 MsgEnv * k_request_msg_env();
 
 //Receive a message envelope
-MsgEnv * k_receive_msg();
+MsgEnv * k_receive_message();
 
 //Send message to a dest_process
 int k_send_messsage(int dest_process_id, MsgEnv * msg_envelope);
@@ -99,7 +99,7 @@ int k_scheduler(PCB * proc, Op PO, OpInfo info);
 //Process Switch from current_process to a new process
 int k_process_switch(PCB* newProc);
 //Context switch, actually does the switching
-int k_context_switch (PCB* current, PCB* next);
+void k_context_switch (jmp_buf *oldProc, jmp_buf *newProc);
 //enqueue process in readyQ
 int rpq_enqueue(PCB * proc);
 
